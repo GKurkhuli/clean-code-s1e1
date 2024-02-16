@@ -32,16 +32,16 @@ const createNewTaskElement=function(taskString){
 const addTaskAndTaskEvent = function(taskValue){
     const listItem = createNewTaskElement(taskValue);
     incompleteTaskHolder.appendChild(listItem);
-    bindTaskEvents(listItem, taskCompleted);
+    bindTaskEvents(listItem, setTaskCompleted);
 }
 
 const addTaskToTodoList=function(){
     const taskValue = taskInput.value.trim();
-    
-    if (!taskValue) return;
+    if (!taskValue) return false;
 
     addTaskAndTaskEvent(taskValue);
     taskInput.value="";
+    return true;
 }
 
 const finishEditingTask = function(param){
@@ -60,9 +60,11 @@ const editableInputParameters = function(listItem){
     }
     return parameters;
 }
+const toggleInputEditMode = function(listItem){
+    listItem.classList.toggle("editMode");
+}
+const handleEditTaskEvent = function(listItem){
 
-const editButtonClickEvent = function(){
-    const listItem = this.parentNode;
     const taskIsInEditMode = listItem.classList.contains("editMode");
     
     if(taskIsInEditMode){
@@ -70,89 +72,87 @@ const editButtonClickEvent = function(){
     }else{
         startEditingTask(editableInputParameters(listItem));
     }
-
-    listItem.classList.toggle("editMode");
 };
 
 
-//Delete task.
-var deleteTask=function(){
-    var listItem = this.parentNode;
-    var ul = listItem.parentNode;
-    ul.removeChild(listItem);
+var handleDeleteTaskEvent = function(listItem){
+    listItem.parentNode.removeChild(listItem);
 }
 
 
-//Mark task completed
-var taskCompleted=function(){
-    console.log("Complete Task...");
-
-    //Append the task list item to the #completed-tasks
-    var listItem=this.parentNode;
+var setTaskCompleted = function(listItem){
     completedTasksHolder.appendChild(listItem);
-    bindTaskEvents(listItem, taskIncomplete);
-
+    bindTaskCheckBoxEvent(listItem, setTaskIncomplete);
 }
 
 
-var taskIncomplete=function(){
-    console.log("Incomplete Task...");
-//Mark task as incomplete.
-    //When the checkbox is unchecked
-    //Append the task list item to the #incompleteTasks.
-    var listItem=this.parentNode;
+const setTaskIncomplete = function(listItem){
     incompleteTaskHolder.appendChild(listItem);
-    bindTaskEvents(listItem,taskCompleted);
+    bindTaskCheckBoxEvent(listItem,setTaskCompleted);
 }
 
-
-
-var ajaxRequest=function(){
+var ajaxRequest = function(){
     console.log("AJAX Request");
 }
 
-const bindTaskEventToEditButton = function(taskListItem){
+const bindEditTaskEvent = function(taskListItem){
     const editButton = taskListItem.querySelector("button.edit");
-    editButton.onclick = editButtonClickEvent;
+    editButton.addEventListener('click', () =>{
+        handleEditTaskEvent(taskListItem);
+        toggleInputEditMode(taskListItem);
+    });
 }
-const bindTaskEventToDeleteButton = function(taskListItem){
+const bindDeleteTaskEvent = function(taskListItem){
     const deleteButton = taskListItem.querySelector("button.delete");
-    deleteButton.onclick = deleteTask;
+    deleteButton.addEventListener('click', () => {
+        handleDeleteTaskEvent(taskListItem)
+    });
 }
-const bindTaskEventToCheckBox = function(taskListItem,checkBoxEventHandler){
+const bindTaskCheckBoxEvent = function(taskListItem,checkBoxEventHandler){
     const checkBox = taskListItem.querySelector("input[type=checkbox]");
-    checkBox.onchange = checkBoxEventHandler;
+    checkBox.addEventListener('change', () => {
+        checkBoxEventHandler(taskListItem);
+    })
 }
 const bindTaskEvents = function(taskListItem,checkBoxEventHandler){
-    bindTaskEventToEditButton(taskListItem);
-    bindTaskEventToDeleteButton(taskListItem);
-    bindTaskEventToCheckBox(taskListItem,checkBoxEventHandler)
+    bindEditTaskEvent(taskListItem);
+    bindDeleteTaskEvent(taskListItem);
+    bindTaskCheckBoxEvent(taskListItem,checkBoxEventHandler)
 }
 
 
-const bindEventsToIncompleteTaskElements = function(){
+const bindEventsToAllIncompleteTaskElements = function(){
     [...incompleteTaskHolder.children].forEach(child => {
-        bindTaskEvents(child,taskCompleted);
+        bindTaskEvents(child,setTaskCompleted);
     });
 }
 
-const bindEventsToCompleteTaskElements = function(){
+const bindEventsToAllCompleteTaskElements = function(){
     [...completedTasksHolder.children].forEach(child => {
-        bindTaskEvents(child,taskIncomplete);
+        bindTaskEvents(child,setTaskIncomplete);
     });
 }
 
 const bindEventsToTasks = function(){
-    bindEventsToIncompleteTaskElements();
-    bindEventsToCompleteTaskElements();
+    bindEventsToAllIncompleteTaskElements();
+    bindEventsToAllCompleteTaskElements();
+}
+const addButtonClickEvent = function(){
+    addButton.addEventListener("click", () =>{
+        const addedTask = addTaskToTodoList();
+        if(addedTask) ajaxRequest();
+    });
+}
+const initiateEventListeners = function(){
+    addButtonClickEvent();
 }
 
+const setupEnvironment = function(){
+    initiateEventListeners();
+    bindEventsToTasks();
+}
 
-addButton.addEventListener("click", () =>{
-    addTaskToTodoList();
-    ajaxRequest();
-});
-bindEventsToTasks();
+setupEnvironment();
 // Issues with usability don't get seen until they are in front of a human tester.
 
 //prevent creation of empty tasks.
