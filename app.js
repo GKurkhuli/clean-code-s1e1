@@ -8,10 +8,10 @@
 
 // Event handling, user interaction is what starts the code execution.
 
-const taskInput = document.getElementById("new-task");//Add a new task.
+const taskInput = document.getElementById("new");//Add a new task.
 const addButton = document.getElementsByTagName("button")[0];//first button
-const incompleteTaskHolder = document.getElementById("incompleteTasks");//ul of #incompleteTasks
-const completedTasksHolder = document.getElementById("completed-tasks");//completed-tasks
+const incompleteTaskHolder = document.getElementById("incomplete");//ul of #incompleteTasks
+const completedTasksHolder = document.getElementById("completed");//completed-tasks
 
 
 const createNewTaskElement=function(taskString){
@@ -61,11 +61,11 @@ const editableInputParameters = function(listItem){
     return parameters;
 }
 const toggleInputEditMode = function(listItem){
-    listItem.classList.toggle("editMode");
+    listItem.classList.toggle("edit-mode");
 }
 const handleEditTaskEvent = function(listItem){
 
-    const taskIsInEditMode = listItem.classList.contains("editMode");
+    const taskIsInEditMode = listItem.classList.contains("edit-mode");
     
     if(taskIsInEditMode){
         finishEditingTask(editableInputParameters(listItem));
